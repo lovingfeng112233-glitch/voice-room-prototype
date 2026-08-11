@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fa">
+  <title>Voice Room - Interactive Product Prototype</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --ink: #141a25;
+      --muted: #707a8c;
+      --line: #dfe4eb;
+      --line-strong: #c8d0db;
+      --cyan: #00a8b8;
+      --cyan-soft: #e5f8fa;
+      --violet: #6d54db;
+      --pink: #ef4f86;
+      --navy: #101b31;
+      --shadow: 0 18px 48px rgba(30, 42, 66, .14);
+      --phone-width: min(390px, calc(100vw - 40px));
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+    button { color: inherit; font: inherit; }
+    button:focus-visible { outline: 3px solid rgba(0, 168, 184, .28); outline-offset: 2px; }
+
+    .prototype-app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(460px, 1fr) 280px; }
+    .sidebar, .inspector { min-height: 100vh; background: var(--panel); }
+    .sidebar { border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; }
+    .inspector { border-left: 1px solid var(--line); padding: 22px 20px; }
+
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px 24px; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; color: #fff; background: var(--navy); font-weight: 800; font-size: 12px; }
+    .brand-name { font-weight: 760; font-size: 14px; }
+    .brand-meta { color: var(--muted); font-size: 10px; margin-top: 3px; }
+
+    .section-label { color: #939dac; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 0 9px 8px; }
+    .flow-tabs { display: grid; gap: 4px; }
+    .flow-tab { width: 100%; min-height: 42px; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 7px; padding: 8px 10px; background: transparent; cursor: pointer; text-align: left; }
+    .flow-tab:hover { background: #f3f5f8; }
+    .flow-tab.active { background: var(--cyan-soft); color: #087d88; }
+    .flow-icon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px; color: #fff; background: var(--cyan); font-size: 11px; font-weight: 800; }
+    .flow-tab[data-flow="invite"] .flow-icon { background: var(--violet); }
+    .flow-tab[data-flow="me"] .flow-icon { background: #2483d7; }
+    .flow-copy { min-width: 0; flex: 1; }
+    .flow-copy strong, .flow-copy small { display: block; }
+    .flow-copy strong { font-size: 12px; }
+    .flow-copy small { color: var(--muted); font-size: 9px; margin-top: 2px; }
+    .flow-count { color: var(--muted); font-size: 10px; }
+
+    .screen-nav { margin-top: 20px; min-height: 0; overflow-y: auto; }
+    .screen-list { display: grid; gap: 3px; }
+    .screen-link { width: 100%; border: 0; border-radius: 7px; background: transparent; display: grid; grid-template-columns: 25px 1fr 14px; align-items: center; gap: 7px; min-height: 36px; padding: 5px 8px; cursor: pointer; text-align: left; }
+    .screen-link:hover { background: #f4f6f8; }
+    .screen-link.active { background: #eef2f5; color: var(--ink); font-weight: 700; }
+    .screen-number { width: 21px; height: 21px; display: grid; place-items: center; border-radius: 5px; color: #8b94a4; background: #edf0f4; font-size: 9px; }
+    .screen-link.active .screen-number { color: #fff; background: var(--navy); }
+    .screen-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+    .screen-arrow { color: #a8b0bc; font-size: 13px; }
+
+    .sidebar-foot { margin-top: auto; padding: 18px 8px 2px; }
+    .progress-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; margin-bottom: 7px; }
+    .progress-track { height: 4px; background: #e9edf1; border-radius: 2px; overflow: hidden; }
+    .progress-value { width: 100%; height: 100%; background: var(--cyan); }
+
+    .workspace { min-width: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { height: 66px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--line); background: rgba(245, 247, 250, .92); }
+    .page-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .page-title h1 { margin: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .status { display: inline-flex; align-items: center; gap: 6px; color: #308369; background: #e8f7f1; border-radius: 6px; padding: 5px 7px; font-size: 9px; }
+    .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #36ae83; }
+    .toolbar { display: flex; align-items: center; gap: 7px; }
+    .tool-btn { min-width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 7px; background: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 10px; cursor: pointer; font-size: 11px; }
+    .tool-btn:hover { border-color: var(--line-strong); box-shadow: 0 5px 14px rgba(25, 36, 56, .07); }
+    .tool-btn.icon { width: 34px; padding: 0; font-size: 16px; }
+    .tool-btn.active { color: #087d88; border-color: #92d7dd; background: var(--cyan-soft); }
+
+    .stage { flex: 1; min-height: 760px; overflow: auto; display: grid; place-items: center; padding: 34px 48px 42px; position: relative; }
+    .stage-grid { position: absolute; inset: 0; pointer-events: none; opacity: .42; background-image: linear-gradient(#e9edf2 1px, transparent 1px), linear-gradient(90deg, #e9edf2 1px, transparent 1px); background-size: 24px 24px; mask-image: linear-gradient(to bottom, rgba(0,0,0,.6), transparent 88%); }
+    .device-area { position: relative; z-index: 1; }
+    .device-label { display: flex; justify-content: space-between; align-items: center; width: var(--phone-width); margin: 0 auto 10px; color: var(--muted); font-size: 9px; }
+    .device { width: calc(var(--phone-width) + 20px); padding: 10px; border-radius: 38px; background: #10141d; box-shadow: var(--shadow), 0 0 0 1px #343a46; position: relative; transition: transform .22s ease; transform-origin: center center; }
+    .device::before { content: ""; position: absolute; z-index: 6; left: 50%; top: 16px; transform: translateX(-50%); width: 92px; height: 22px; border-radius: 14px; background: #0d1118; pointer-events: none; }
+    .screen { position: relative; width: var(--phone-width); aspect-ratio: 390 / 844; border-radius: 29px; overflow: hidden; background: #fff; }
+    .screen-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 1; transition: opacity .16s ease, transform .18s ease; user-select: none; -webkit-user-drag: none; }
+    .screen-image.leaving { opacity: .42; transform: scale(.99); }
+    .hotspot-layer { position: absolute; inset: 0; z-index: 4; }
+    .hotspot { position: absolute; border: 0; border-radius: 7px; background: transparent; cursor: pointer; }
+    .hotspot::before { content: ""; position: absolute; inset: 0; border: 1px solid transparent; border-radius: inherit; transition: .16s ease; }
+    .hotspot::after { content: attr(aria-label); position: absolute; left: 50%; bottom: calc(100% + 7px); transform: translate(-50%, 4px); min-width: max-content; max-width: 150px; padding: 6px 8px; border-radius: 6px; color: #fff; background: rgba(16, 27, 49, .94); font-size: 9px; line-height: 1.3; opacity: 0; pointer-events: none; transition: .16s ease; }
+    .hotspot:hover::before, .hotspot:focus-visible::before { border-color: var(--cyan); background: rgba(0, 168, 184, .1); box-shadow: 0 0 0 2px rgba(0, 168, 184, .12); }
+    .hotspot:hover::after, .hotspot:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+    .show-hints .hotspot::before { border-color: rgba(0, 168, 184, .78); background: rgba(0, 168, 184, .09); }
+    .show-hints .hotspot::after { opacity: 1; transform: translate(-50%, 0); }
+    .hotspot.bottom::after { bottom: auto; top: calc(100% + 7px); }
+    .screen-flash { position: absolute; inset: 0; z-index: 7; display: grid; place-items: center; background: rgba(8, 15, 28, .46); opacity: 0; pointer-events: none; transition: opacity .18s; }
+    .screen-flash.show { opacity: 1; }
+    .flash-card { color: #fff; background: rgba(17, 26, 43, .92); border: 1px solid rgba(255,255,255,.16); border-radius: 8px; padding: 11px 14px; font-size: 11px; box-shadow: 0 12px 28px rgba(0,0,0,.24); }
+
+    .inspect-kicker { color: var(--muted); font-size: 9px; font-weight: 700; text-transform: uppercase; }
+    .inspect-title { margin: 7px 0 4px; font-size: 18px; line-height: 1.35; }
+    .inspect-id { color: var(--muted); font-size: 10px; }
+    .divider { height: 1px; background: var(--line); margin: 20px 0; }
+    .inspect-section + .inspect-section { margin-top: 22px; }
+    .inspect-section h2 { margin: 0 0 11px; font-size: 11px; }
+    .flow-path { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+    .path-node { border: 0; border-radius: 6px; padding: 6px 8px; background: #eef1f4; color: #5b6575; cursor: pointer; font-size: 9px; }
+    .path-node.current { color: #087d88; background: var(--cyan-soft); font-weight: 700; }
+    .path-arrow { color: #a9b1bd; font-size: 10px; }
+    .action-list { display: grid; gap: 7px; }
+    .action-card { border: 1px solid var(--line); border-radius: 7px; background: #fff; padding: 10px; display: grid; grid-template-columns: 24px 1fr; gap: 9px; text-align: left; cursor: pointer; }
+    .action-card:hover { border-color: #9fdce1; background: #fbfefe; }
+    .action-index { width: 23px; height: 23px; display: grid; place-items: center; border-radius: 6px; color: #087d88; background: var(--cyan-soft); font-size: 9px; font-weight: 800; }
+    .action-copy strong { display: block; font-size: 10px; margin: 1px 0 3px; }
+    .action-copy small { display: block; color: var(--muted); font-size: 9px; line-height: 1.45; }
+    .empty-action { color: var(--muted); background: #f4f6f8; border-radius: 7px; padding: 12px; font-size: 9px; line-height: 1.5; }
+    .prototype-note { color: var(--muted); font-size: 9px; line-height: 1.65; }
+    .keyboard { display: inline-flex; align-items: center; min-width: 20px; height: 18px; justify-content: center; padding: 0 5px; border: 1px solid #cfd6df; border-bottom-width: 2px; border-radius: 4px; color: #5c6675; background: #fff; font-size: 8px; }
+
+    .toast { position: fixed; z-index: 20; left: 50%; bottom: 24px; transform: translate(-50%, 12px); color: #fff; background: #172136; border-radius: 7px; padding: 9px 12px; font-size: 10px; opacity: 0; pointer-events: none; transition: .2s ease; box-shadow: 0 10px 26px rgba(12, 20, 35, .24); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 1100px) {
+      .prototype-app { grid-template-columns: 210px minmax(430px, 1fr); }
+      .inspector { display: none; }
+    }
+    @media (max-width: 760px) {
+      :root { --phone-width: min(390px, calc(100vw - 28px)); }
+      .prototype-app { display: block; }
+      .sidebar { min-height: 0; padding: 11px 12px; border-right: 0; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 12; }
+      .brand, .section-label, .screen-nav, .sidebar-foot { display: none; }
+      .flow-tabs { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+      .flow-tab { min-height: 38px; justify-content: center; padding: 5px; }
+      .flow-icon { width: 25px; height: 25px; }
+      .flow-copy small, .flow-count { display: none; }
+      .workspace { min-height: calc(100vh - 61px); }
+      .topbar { height: 54px; padding: 0 12px; }
+      .page-title h1 { font-size: 13px; }
+      .status, .tool-btn[data-action="back"], .tool-btn[data-action="share"] { display: none; }
+      .stage { min-height: 0; padding: 16px 4px 28px; display: block; }
+      .stage-grid, .device-label { display: none; }
+      .device { width: calc(var(--phone-width) + 10px); margin: 0 auto; padding: 5px; border-radius: 33px; }
+      .screen { border-radius: 29px; }
+      .device::before { top: 10px; }
+      .show-hints .hotspot::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="prototype-app">
+    <aside class="sidebar" aria-label="原型导航">
+      <div class="brand">
+        <div class="brand-mark">VR</div>
+        <div><div class="brand-name">VOICE ROOM</div><div class="brand-meta">Interactive prototype · v4.0 High Fidelity</div></div>
+      </div>
+      <div class="section-label">Product flows</div>
+      <div class="flow-tabs" id="flowTabs"></div>
+      <nav class="screen-nav" aria-label="页面列表">
+        <div class="section-label">Screens</div>
+        <div class="screen-list" id="screenList"></div>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="progress-label"><span>Complete prototype</span><span>53 / 53</span></div>
+        <div class="progress-track"><div class="progress-value"></div></div>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div class="page-title"><h1 id="pageTitle">Party 房间列表</h1><span class="status">可交互</span></div>
+        <div class="toolbar">
+          <button class="tool-btn" data-action="back" title="返回上一步">← 返回</button>
+          <button class="tool-btn icon" data-action="hints" title="显示可点击区域" aria-label="显示可点击区域">◎</button>
+          <button class="tool-btn" data-action="share" title="复制当前页面链接">分享</button>
+          <button class="tool-btn" data-action="board" title="打开四模块总览图">总览</button>
+        </div>
+      </header>
+      <section class="stage" id="stage" aria-label="手机原型预览">
+        <div class="stage-grid"></div>
+        <div class="device-area">
+          <div class="device-label"><span>LIVE PROTOTYPE</span><span>390 × 844</span></div>
+          <div class="device" id="device">
+            <div class="screen" id="phoneScreen">
+              <img class="screen-image" id="screenImage" alt="">
+              <div class="hotspot-layer" id="hotspotLayer"></div>
+              <div class="screen-flash" id="screenFlash"><div class="flash-card" id="flashMessage"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="inspector">
+      <div class="inspect-kicker" id="inspectFlow">Rooms / Discovery</div>
+      <h2 class="inspect-title" id="inspectTitle">Party 房间列表</h2>
+      <div class="inspect-id" id="inspectId">ROOMS-01</div>
+      <div class="divider"></div>
+      <section class="inspect-section">
+        <h2>当前路径</h2>
+        <div class="flow-path" id="flowPath"></div>
+      </section>
+      <section class="inspect-section">
+        <h2>可执行操作</h2>
+        <div class="action-list" id="actionList"></div>
+      </section>
+      <section class="inspect-section">
+        <h2>原型说明</h2>
+        <div class="prototype-note">点击手机画面中的交互区域即可沿业务流跳转。开启热点提示后会标出当前页面全部可操作位置。<br><br><span class="keyboard">←</span> 返回上一步　<span class="keyboard">H</span> 热点提示</div>
+      </section>
+    </aside>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="prototype-data.js"></script>
+  <script>
+    const assetRoot = 'voice-room-v2-prototypes';
+    const flowMeta = {
+      auth: {label:'Auth', zh:'注册登录', icon:'A', count:5},
+      rooms: {label:'Rooms', zh:'房间', icon:'R', count:13},
+      invite: {label:'Invite', zh:'裂变', icon:'I', count:7},
+      me: {label:'Me', zh:'我的', icon:'M', count:28}
+    };
+
+    const legacyScreens = [
+      {id:'welcome', code:'AUTH-01', flow:'auth', title:'Welcome', pattern:'Onboarding', file:'00-auth/01-welcome.png', actions:[
+        {label:'Sign in', desc:'进入手机号登录流程', target:'sign-in', box:[7,75,86,7]},
+        {label:'Create account', desc:'创建新账号并进入邀请码步骤', target:'sign-in', box:[7,83,86,7]},
+        {label:'Continue as guest', desc:'跳过登录查看 Rooms', target:'party-list', box:[18,89,64,5], bottom:true}
+      ]},
+      {id:'sign-in', code:'AUTH-02', flow:'auth', title:'Sign in', pattern:'Authentication', file:'00-auth/02-sign-in.png', actions:[
+        {label:'Continue', desc:'验证手机号后填写邀请码', target:'invitation', box:[7,50,86,8]},
+        {label:'Create an account', desc:'继续注册流程', target:'invitation', box:[18,89,64,5], bottom:true}
+      ]},
+      {id:'invitation', code:'AUTH-03', flow:'auth', title:'Invitation code', pattern:'Attribution', file:'00-auth/03-invitation-code.png', actions:[
+        {label:'Find inviter', desc:'验证邀请码并确认邀请人', feedback:'已找到 Aarav · Royal Voice Agency', box:[7,45,86,7]},
+        {label:'Confirm invitation', desc:'绑定邀请码并完成登录', target:'auth-success', box:[7,45,86,7]},
+        {label:'I don\'t have a code', desc:'暂不绑定，稍后可在 Invite 填写', target:'auth-success', box:[24,80,52,6], bottom:true}
+      ]},
+      {id:'auth-success', code:'AUTH-04', flow:'auth', title:'Login success', pattern:'Activation', file:'00-auth/04-success.png', actions:[
+        {label:'Enter Voice Room', desc:'进入 Rooms 房间发现页', target:'party-list', box:[7,77,86,7], bottom:true}
+      ]},
+      {id:'party-list', code:'ROOMS-01', flow:'rooms', title:'Party 房间列表', pattern:'Discovery', file:'01-rooms/01-party-list.png', actions:[
+        {label:'切换到 Game', desc:'浏览游戏主题房间', target:'game-list', box:[22,4,18,7]},
+        {label:'进入 Evening Chill', desc:'打开普通语音房', target:'party-room-20', box:[5,12,90,10]},
+        {label:'创建房间', desc:'选择人数并预览座位布局', target:'create-room', box:[83,83,13,7]},
+        {label:'打开 Invite', desc:'查看三级佣金与邀请码绑定', target:'invite-home', box:[36,93,28,7], bottom:true},
+        {label:'打开 Me', desc:'进入个人中心', target:'me-home', box:[70,93,28,7], bottom:true}
+      ]},
+      {id:'game-list', code:'ROOMS-02', flow:'rooms', title:'Game 房间列表', pattern:'Discovery', file:'01-rooms/02-game-list.png', actions:[
+        {label:'切换到 Party', desc:'返回 Party 房间列表', target:'party-list', box:[5,4,17,7]},
+        {label:'进入 Dragon Club', desc:'打开多人游戏房', target:'game-room', box:[7,48,86,15]},
+        {label:'创建房间', desc:'选择人数并预览座位布局', target:'create-room', box:[83,83,13,7]},
+        {label:'打开 Invite', desc:'查看三级佣金与邀请码绑定', target:'invite-home', box:[36,93,28,7], bottom:true},
+        {label:'打开 Me', desc:'进入个人中心', target:'me-home', box:[70,93,28,7], bottom:true}
+      ]},
+      {id:'create-room', code:'ROOMS-03', flow:'rooms', title:'创建房间', pattern:'Creation', file:'01-rooms/03-create-room.png', actions:[
+        {label:'返回房间列表', desc:'取消创建并回到 Rooms', target:'party-list', box:[2,3,12,8]},
+        {label:'选择 5 人', desc:'预览 3+2 座位布局', target:'party-room-5', box:[7,57,26,5]},
+        {label:'选择 8 人', desc:'预览 4+4 座位布局', target:'party-room-8', box:[36,57,26,5]},
+        {label:'选择 9 人', desc:'预览 3×3 座位布局', target:'party-room-9', box:[65,57,27,5]},
+        {label:'选择 12 人', desc:'预览 4×3 座位布局', target:'party-room-12', box:[7,62,26,5]},
+        {label:'选择 15 人', desc:'预览 5×3 座位布局', target:'party-room-15', box:[36,62,26,5]},
+        {label:'选择 20 人', desc:'预览 4×5 座位布局', target:'party-room-20', box:[65,62,27,5]},
+        {label:'创建并进入房间', desc:'按当前 12 席配置创建', target:'party-room-12', box:[7,91,86,7], bottom:true}
+      ]},
+      ...[5,8,9,12,15,20].map((capacity, index) => ({id:`party-room-${capacity}`, code:`ROOMS-${String(index + 4).padStart(2,'0')}`, flow:'rooms', title:`普通语音房 · ${capacity} seats`, pattern:`${capacity}-seat layout`, file:`01-rooms/${String(index + 4).padStart(2,'0')}-party-room-${capacity}.png`, actions:[
+        {label:'退出房间', desc:'关闭房间并返回列表', target:'party-list', box:[89,2,10,7]},
+        {label:'查看房间成员', desc:'打开成员列表和麦位状态', target:'room-members', box:[75,2,13,7]},
+        {label:'加入麦位', desc:'申请上麦参与聊天', feedback:'已申请加入麦位', box:[42,88,31,10], bottom:true},
+        {label:'打开礼物面板', desc:'选择礼物赠送给房间成员', target:'party-gift', box:[79,87,19,11], bottom:true}
+      ]})),
+      {id:'game-room', code:'ROOMS-10', flow:'rooms', title:'游戏房', pattern:'Live game', file:'01-rooms/10-game-room.png', actions:[
+        {label:'退出游戏房', desc:'返回 Game 房间列表', target:'game-list', box:[89,2,10,7]},
+        {label:'选择阵营', desc:'选择 Dragon / Tie / Tiger', feedback:'下注选择已更新', box:[10,19,80,18]},
+        {label:'打开礼物面板', desc:'赠送游戏主题礼物', target:'game-gift', box:[79,87,19,11], bottom:true}
+      ]},
+      {id:'party-gift', code:'ROOMS-11', flow:'rooms', title:'普通房礼物面板', pattern:'Commerce', file:'01-rooms/11-party-gift-panel.png', actions:[
+        {label:'关闭礼物面板', desc:'回到普通语音房', target:'party-room-20', box:[88,62,11,8]},
+        {label:'选择礼物', desc:'选择 Rose、Heart 或其他礼物', feedback:'礼物已选中', box:[4,70,92,20]},
+        {label:'发送礼物', desc:'将当前礼物发送给所选成员', feedback:'礼物发送成功', box:[74,94,25,6], bottom:true}
+      ]},
+      {id:'game-gift', code:'ROOMS-12', flow:'rooms', title:'游戏房礼物面板', pattern:'Commerce', file:'01-rooms/12-game-gift-panel.png', actions:[
+        {label:'关闭礼物面板', desc:'回到游戏房', target:'game-room', box:[88,62,11,8]},
+        {label:'选择礼物', desc:'选择要发送的游戏礼物', feedback:'礼物已选中', box:[4,70,92,20]},
+        {label:'发送礼物', desc:'向所选玩家发送礼物', feedback:'礼物发送成功', box:[74,94,25,6], bottom:true}
+      ]},
+      {id:'room-members', code:'ROOMS-13', flow:'rooms', title:'Room members', pattern:'Member sheet', file:'01-rooms/13-room-members.png', actions:[
+        {label:'关闭成员面板', desc:'回到 20 人普通语音房', target:'party-room-20', box:[88,38,11,8]}
+      ]},
+      {id:'invite-home', code:'INVITE-01', flow:'invite', title:'Invite 裂变首页', pattern:'Growth', file:'02-invite/01-invite-home.png', actions:[
+        {label:'填写别人的邀请码', desc:'打开手动绑定邀请码页面', target:'bind-invite', box:[6,39,88,9]},
+        {label:'查看佣金规则', desc:'了解三级佣金计算方式', target:'commission-rules', box:[75,2,12,8]},
+        {label:'查看佣金记录', desc:'浏览每一笔佣金收入', target:'commission-records', box:[87,2,12,8]},
+        {label:'查看全部成员', desc:'进入三级成员网络', target:'network-members', box:[7,66,86,5]},
+        {label:'打开 Rooms', desc:'返回房间发现页', target:'party-list', box:[2,93,30,7], bottom:true},
+        {label:'打开 Me', desc:'进入个人中心', target:'me-home', box:[70,93,28,7], bottom:true}
+      ]},
+      {id:'bind-invite', code:'INVITE-02', flow:'invite', title:'Bind invitation code', pattern:'Attribution', file:'02-invite/02-bind-invitation-code.png', actions:[
+        {label:'返回 Invite', desc:'回到裂变首页', target:'invite-home', box:[2,3,12,8]},
+        {label:'Find inviter', desc:'根据邀请码查询邀请人', feedback:'已找到 Aarav · Royal Voice Agency', box:[7,32,86,7]},
+        {label:'Confirm & Bind', desc:'确认关系并绑定邀请码', target:'bind-success', box:[7,70,86,7], bottom:true}
+      ]},
+      {id:'bind-success', code:'INVITE-03', flow:'invite', title:'Binding successful', pattern:'Confirmation', file:'02-invite/03-binding-success.png', actions:[
+        {label:'Back to Invite', desc:'返回裂变首页查看状态', target:'invite-home', box:[7,80,86,7], bottom:true}
+      ]},
+      {id:'commission-rules', code:'INVITE-04', flow:'invite', title:'三级佣金规则', pattern:'Education', file:'02-invite/04-commission-rules.png', actions:[
+        {label:'返回 Invite', desc:'回到裂变首页', target:'invite-home', box:[2,3,12,8]},
+        {label:'查看佣金记录', desc:'核对三级佣金明细', target:'commission-records', box:[8,89,84,6], bottom:true}
+      ]},
+      {id:'commission-records', code:'INVITE-05', flow:'invite', title:'佣金记录', pattern:'Ledger', file:'02-invite/05-commission-records.png', actions:[
+        {label:'返回 Invite', desc:'回到裂变首页', target:'invite-home', box:[2,3,12,8]},
+        {label:'切换佣金层级', desc:'筛选 L1、L2、L3 记录', feedback:'佣金筛选已更新', box:[5,27,90,7]}
+      ]},
+      {id:'network-members', code:'INVITE-06', flow:'invite', title:'三级成员列表', pattern:'Directory', file:'02-invite/06-network-members.png', actions:[
+        {label:'返回 Invite', desc:'回到裂变首页', target:'invite-home', box:[2,3,12,8]},
+        {label:'切换成员层级', desc:'筛选一级、二级或三级成员', feedback:'成员层级已切换', box:[6,25,88,7]},
+        {label:'查看 Maya 详情', desc:'打开成员贡献与下级网络', target:'member-details', box:[5,42,90,11]}
+      ]},
+      {id:'member-details', code:'INVITE-07', flow:'invite', title:'成员详情', pattern:'Profile', file:'02-invite/07-member-details.png', actions:[
+        {label:'返回成员列表', desc:'返回三级成员网络', target:'network-members', box:[2,3,12,8]},
+        {label:'复制成员 ID', desc:'复制 Maya 的成员编号', feedback:'成员 ID 已复制', box:[8,89,84,6], bottom:true}
+      ]},
+      {id:'me-home', code:'ME-01', flow:'me', title:'我的首页', pattern:'Account', file:'03-me/01-me-home.png', actions:[
+        {label:'编辑个人资料', desc:'修改头像和个人信息', target:'edit-profile', box:[6,8,88,12]},
+        {label:'查看钱包记录', desc:'浏览充值、礼物和游戏记录', target:'wallet-records', box:[5,20,90,12]},
+        {label:'充值', desc:'选择充值金额和币商', target:'recharge', box:[69,23,23,6]},
+        {label:'我的公会', desc:'查看或绑定公会关系', target:'agency-unbound', box:[5,34,90,12]},
+        {label:'主播中心', desc:'查看开播数据与记录入口', target:'streamer-center', box:[5,46,90,12]},
+        {label:'设置', desc:'管理账户、偏好与隐私', target:'setting', box:[5,58,90,12]},
+        {label:'打开 Rooms', desc:'返回房间发现页', target:'party-list', box:[2,93,30,7], bottom:true},
+        {label:'打开 Invite', desc:'查看三级佣金网络', target:'invite-home', box:[36,93,28,7], bottom:true}
+      ]},
+      {id:'edit-profile', code:'ME-02', flow:'me', title:'编辑个人资料', pattern:'Profile edit', file:'03-me/02-edit-profile.png', actions:[
+        {label:'返回我的首页', desc:'取消编辑并返回', target:'me-home', box:[2,3,12,8]},
+        {label:'保存资料', desc:'保存本次个人资料修改', feedback:'个人资料已保存', box:[8,89,84,6], bottom:true}
+      ]},
+      {id:'wallet-records', code:'ME-03', flow:'me', title:'钱包记录', pattern:'Finance', file:'03-me/03-wallet-records.png', actions:[
+        {label:'返回我的首页', desc:'回到个人中心', target:'me-home', box:[2,3,12,8]},
+        {label:'充值', desc:'进入充值流程', target:'recharge', box:[70,15,22,6]},
+        {label:'切换账单类型', desc:'筛选充值、礼物或游戏记录', feedback:'账单筛选已更新', box:[6,27,88,7]}
+      ]},
+      {id:'recharge', code:'ME-04', flow:'me', title:'币商充值', pattern:'Finance', file:'03-me/04-recharge.png', actions:[
+        {label:'返回钱包', desc:'取消充值并返回钱包记录', target:'wallet-records', box:[2,3,12,8]},
+        {label:'选择充值金额', desc:'选择 1,000 至 100,000 Coins', feedback:'充值金额已选择', box:[7,27,86,31]},
+        {label:'继续充值', desc:'确认金额并进入支付', feedback:'充值订单已创建', box:[8,89,84,6], bottom:true}
+      ]},
+      {id:'agency-unbound', code:'ME-05', flow:'me', title:'我的公会 · 未绑定', pattern:'Agency onboarding', file:'03-me/05-my-agency-unbound.png', actions:[
+        {label:'返回我的首页', desc:'回到个人中心', target:'me-home', box:[2,3,12,8]},
+        {label:'绑定 Agency', desc:'输入公会 ID 或邀请码', target:'bind-agency', box:[7,64,86,7], bottom:true}
+      ]},
+      {id:'bind-agency', code:'ME-06', flow:'me', title:'绑定公会', pattern:'Agency binding', file:'03-me/06-bind-agency.png', actions:[
+        {label:'返回我的公会', desc:'返回未绑定状态页', target:'agency-unbound', box:[2,3,12,8]},
+        {label:'搜索公会', desc:'根据 ID 查找公会', feedback:'已找到 Royal Voice Agency', box:[7,34,86,7]},
+        {label:'确认绑定', desc:'确认 streamer membership 关系', target:'my-agency', box:[7,71,86,7], bottom:true}
+      ]},
+      {id:'my-agency', code:'ME-07', flow:'me', title:'我的公会', pattern:'Creator tools', file:'03-me/07-my-agency.png', actions:[
+        {label:'返回我的首页', desc:'回到个人中心', target:'me-home', box:[2,3,12,8]},
+        {label:'查看本月详情', desc:'打开礼物与游戏收益明细', target:'agency-month', box:[69,46,26,6]}
+      ]},
+      {id:'agency-month', code:'ME-08', flow:'me', title:'公会本月详情', pattern:'Earnings detail', file:'03-me/08-agency-month-details.png', actions:[
+        {label:'返回我的公会', desc:'回到公会首页', target:'my-agency', box:[2,3,12,8]}
+      ]},
+      {id:'streamer-center', code:'ME-09', flow:'me', title:'Streamer Center', pattern:'Creator tools', file:'03-me/09-streamer-center.png', actions:[
+        {label:'返回我的首页', desc:'回到个人中心', target:'me-home', box:[2,3,12,8]},
+        {label:'打开我的房间', desc:'进入主播的普通语音房', target:'party-room-20', box:[68,10,27,9]},
+        {label:'查看 Live Records', desc:'查看直播场次与时长', target:'live-records', box:[5,76,90,7]},
+        {label:'查看 Gift Records', desc:'查看直播礼物收益', target:'gift-records', box:[5,83,90,7]}
+      ]},
+      {id:'live-records', code:'ME-10', flow:'me', title:'Live Records', pattern:'Creator analytics', file:'03-me/10-live-records.png', actions:[
+        {label:'返回 Streamer Center', desc:'返回主播中心', target:'streamer-center', box:[2,3,12,8]}
+      ]},
+      {id:'gift-records', code:'ME-11', flow:'me', title:'Gift Records', pattern:'Creator analytics', file:'03-me/11-gift-records.png', actions:[
+        {label:'返回 Streamer Center', desc:'返回主播中心', target:'streamer-center', box:[2,3,12,8]}
+      ]},
+      {id:'setting', code:'ME-12', flow:'me', title:'Setting', pattern:'Preferences', file:'03-me/12-setting.png', actions:[
+        {label:'返回我的首页', desc:'回到个人中心', target:'me-home', box:[2,3,12,8]},
+        {label:'Account & Security', desc:'进入账户安全二级页', target:'account-security', box:[5,10,90,13]},
+        {label:'Language', desc:'进入语言设置', target:'language', box:[5,41,90,13]},
+        {label:'Audio & Microphone', desc:'进入音频与麦克风设置', target:'audio', box:[5,51,90,13]},
+        {label:'Terms of Service', desc:'查看服务条款', target:'terms', box:[5,65,90,10]},
+        {label:'Privacy Policy', desc:'查看隐私政策', target:'privacy', box:[5,75,90,10]}
+      ]},
+      {id:'account-security', code:'ME-13', flow:'me', title:'Account & Security', pattern:'Account protection', file:'03-me/13-account-security.png', actions:[
+        {label:'返回 Setting', desc:'回到设置页', target:'setting', box:[2,3,12,8]},
+        {label:'Change phone number', desc:'修改登录手机号', feedback:'手机号修改流程已打开', box:[65,10,30,10]},
+        {label:'Review invitation binding', desc:'查看邀请关系绑定状态', feedback:'绑定关系已确认', box:[5,59,90,12]}
+      ]},
+      {id:'language', code:'ME-14', flow:'me', title:'Language', pattern:'Preference', file:'03-me/14-language.png', actions:[{label:'返回 Setting', desc:'回到设置页', target:'setting', box:[2,3,12,8]}]},
+      {id:'audio', code:'ME-15', flow:'me', title:'Audio & Microphone', pattern:'Permissions', file:'03-me/15-audio-microphone.png', actions:[{label:'返回 Setting', desc:'回到设置页', target:'setting', box:[2,3,12,8]}]},
+      {id:'terms', code:'ME-16', flow:'me', title:'Terms of Service', pattern:'Legal', file:'03-me/16-terms-of-service.png', actions:[{label:'返回 Setting', desc:'回到设置页', target:'setting', box:[2,3,12,8]}]},
+      {id:'privacy', code:'ME-17', flow:'me', title:'Privacy Policy', pattern:'Legal', file:'03-me/17-privacy-policy.png', actions:[{label:'返回 Setting', desc:'回到设置页', target:'setting', box:[2,3,12,8]}]}
+    ];
+
+    const screens = window.VOICE_ROOM_SCREENS;
+    const byId = Object.fromEntries(screens.map(screen => [screen.id, screen]));
+    const flowTabs = document.querySelector('#flowTabs');
+    const screenList = document.querySelector('#screenList');
+    const phoneScreen = document.querySelector('#phoneScreen');
+    const screenImage = document.querySelector('#screenImage');
+    const hotspotLayer = document.querySelector('#hotspotLayer');
+    const actionList = document.querySelector('#actionList');
+    const flowPath = document.querySelector('#flowPath');
+    const flash = document.querySelector('#screenFlash');
+    const flashMessage = document.querySelector('#flashMessage');
+    const toastNode = document.querySelector('#toast');
+    let current = null;
+    let historyStack = [];
+    let hintsVisible = false;
+    let toastTimer;
+    let flashTimer;
+
+    function renderFlowTabs() {
+      flowTabs.innerHTML = Object.entries(flowMeta).map(([key, meta]) => `
+        <button class="flow-tab" data-flow="${key}">
+          <span class="flow-icon">${meta.icon}</span>
+          <span class="flow-copy"><strong>${meta.label}</strong><small>${meta.zh}模块</small></span>
+          <span class="flow-count">${meta.count}</span>
+        </button>`).join('');
+      flowTabs.querySelectorAll('.flow-tab').forEach(button => {
+        button.addEventListener('click', () => {
+          const first = screens.find(screen => screen.flow === button.dataset.flow);
+          navigate(first.id);
+        });
+      });
+    }
+
+    function renderScreenList(flow) {
+      const list = screens.filter(screen => screen.flow === flow);
+      screenList.innerHTML = list.map((screen, index) => `
+        <button class="screen-link ${current?.id === screen.id ? 'active' : ''}" data-screen="${screen.id}">
+          <span class="screen-number">${String(index + 1).padStart(2, '0')}</span>
+          <span class="screen-name">${screen.title}</span>
+          <span class="screen-arrow">›</span>
+        </button>`).join('');
+      screenList.querySelectorAll('.screen-link').forEach(button => button.addEventListener('click', () => navigate(button.dataset.screen)));
+    }
+
+    function renderHotspots(screen) {
+      hotspotLayer.innerHTML = screen.actions.map((action, index) => {
+        const [x, y, width, height] = action.box;
+        return `<button class="hotspot ${action.bottom ? 'bottom' : ''}" data-action-index="${index}" aria-label="${action.label}" style="left:${x}%;top:${y}%;width:${width}%;height:${height}%"></button>`;
+      }).join('');
+      hotspotLayer.querySelectorAll('.hotspot').forEach(button => {
+        button.addEventListener('click', () => executeAction(screen.actions[Number(button.dataset.actionIndex)]));
+      });
+    }
+
+    function renderInspector(screen) {
+      document.querySelector('#inspectFlow').textContent = `${flowMeta[screen.flow].label} / ${screen.pattern}`;
+      document.querySelector('#inspectTitle').textContent = screen.title;
+      document.querySelector('#inspectId').textContent = screen.code;
+      const uniquePath = [...historyStack.slice(-3), screen.id].filter((id, index, all) => all.indexOf(id) === index);
+      flowPath.innerHTML = uniquePath.map((id, index) => `${index ? '<span class="path-arrow">›</span>' : ''}<button class="path-node ${id === screen.id ? 'current' : ''}" data-path="${id}">${byId[id].title}</button>`).join('');
+      flowPath.querySelectorAll('.path-node').forEach(button => button.addEventListener('click', () => navigate(button.dataset.path)));
+      actionList.innerHTML = screen.actions.length ? screen.actions.map((action, index) => `
+        <button class="action-card" data-action-index="${index}">
+          <span class="action-index">${index + 1}</span>
+          <span class="action-copy"><strong>${action.label}</strong><small>${action.desc}</small></span>
+        </button>`).join('') : '<div class="empty-action">当前页面没有后续操作。</div>';
+      actionList.querySelectorAll('.action-card').forEach(button => button.addEventListener('click', () => executeAction(screen.actions[Number(button.dataset.actionIndex)])));
+    }
+
+    function navigate(id, options = {}) {
+      const next = byId[id];
+      if (!next || next.id === current?.id) return;
+      if (current && options.push !== false) historyStack.push(current.id);
+      screenImage.classList.add('leaving');
+      const update = () => {
+        current = next;
+        screenImage.src = `${assetRoot}/${next.file}`;
+        screenImage.alt = next.title;
+        document.querySelector('#pageTitle').textContent = next.title;
+        document.title = `${next.title} - Voice Room Prototype`;
+        history.replaceState(null, '', `#${next.id}`);
+        document.querySelectorAll('.flow-tab').forEach(button => button.classList.toggle('active', button.dataset.flow === next.flow));
+        renderScreenList(next.flow);
+        renderHotspots(next);
+        renderInspector(next);
+        window.setTimeout(() => screenImage.classList.remove('leaving'), 40);
+      };
+      window.setTimeout(update, current ? 110 : 0);
+    }
+
+    function goBack() {
+      const previous = historyStack.pop();
+      if (previous) navigate(previous, {push:false});
+      else toast('已经是这条路径的起点');
+    }
+
+    function executeAction(action) {
+      if (action.target) navigate(action.target);
+      else if (action.feedback) showFeedback(action.feedback);
+    }
+
+    function showFeedback(message) {
+      clearTimeout(flashTimer);
+      flashMessage.textContent = message;
+      flash.classList.add('show');
+      flashTimer = window.setTimeout(() => flash.classList.remove('show'), 1050);
+    }
+
+    function toast(message) {
+      clearTimeout(toastTimer);
+      toastNode.textContent = message;
+      toastNode.classList.add('show');
+      toastTimer = window.setTimeout(() => toastNode.classList.remove('show'), 1800);
+    }
+
+    function toggleHints() {
+      hintsVisible = !hintsVisible;
+      phoneScreen.classList.toggle('show-hints', hintsVisible);
+      document.querySelector('[data-action="hints"]').classList.toggle('active', hintsVisible);
+      toast(hintsVisible ? '已显示全部可点击区域' : '已隐藏可点击区域');
+    }
+
+    document.querySelector('[data-action="back"]').addEventListener('click', goBack);
+    document.querySelector('[data-action="hints"]').addEventListener('click', toggleHints);
+    document.querySelector('[data-action="share"]').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(location.href); toast('当前页面链接已复制'); }
+      catch { toast('当前页面链接已就绪'); }
+    });
+    document.querySelector('[data-action="board"]').addEventListener('click', () => {
+      location.href = 'voice-room-v2-prototypes/voice-room-v2-overview-board.png';
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key.toLowerCase() === 'h') toggleHints();
+      if (event.key === 'ArrowLeft' && !event.metaKey && !event.ctrlKey) goBack();
+    });
+    window.addEventListener('hashchange', () => {
+      const id = location.hash.slice(1);
+      if (byId[id] && id !== current?.id) navigate(id);
+    });
+
+    renderFlowTabs();
+    navigate(byId[location.hash.slice(1)] ? location.hash.slice(1) : 'auth-welcome', {push:false});
+  </script>
+</body>
+</html>

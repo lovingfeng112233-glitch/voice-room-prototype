@@ -1,0 +1,158 @@
+(function () {
+  const base = [
+    ['auth-welcome','AUTH-01','auth','Welcome','Onboarding','01-auth/01-welcome.png',['Phone login','Social login','Legal links'],'Start with one clear promise','A lightweight entry screen moves users into account creation without competing product messages.'],
+    ['auth-phone','AUTH-02','auth','Phone Login','Authentication','01-auth/02-phone-login.png',['Country code','Phone field','Primary CTA'],'Keep login predictable','Phone number and country code stay in one focused surface with a single forward action.'],
+    ['auth-otp','AUTH-03','auth','OTP Verification','Authentication','01-auth/03-otp.png',['OTP fields','Resend','Primary CTA'],'Make verification calm','The verification state explains what happened and keeps resend secondary to completion.'],
+    ['auth-invite','AUTH-04','auth','Invitation Code','Attribution','01-auth/04-invitation-code.png',['Invitation input','Bind CTA','Skip'],'Capture attribution early','Invitation binding appears immediately after login so agency and referral attribution remain reliable.'],
+    ['auth-bound','AUTH-05','auth','Invitation Bound','Confirmation','01-auth/05-invitation-bound-success.png',['Success state','Inviter card','Continue CTA'],'Confirm the relationship','A visible success state reassures the user that the invitation relationship was recorded.'],
+
+    ['party-list','ROOMS-01','rooms','Party Rooms','Discovery','02-rooms/01-party-list.png',['Party / Game tabs','Room list','Create room'],'Scan rooms quickly','Compact room rows surface name, country, category, avatars, online count, and heat without wasting vertical space.'],
+    ['game-list','ROOMS-02','rooms','Game Rooms','Discovery','02-rooms/02-game-list.png',['Game shortcuts','Game room list','Create room'],'Games first, rooms next','Game entry cards stay under half a screen while active game rooms remain visible below.'],
+    ['room-search','ROOMS-03','rooms','Room Search','Search','02-rooms/03-room-search.png',['Keyword input','Room ID','Results'],'Support both search intents','Users may locate a room by memorable name or exact room ID.'],
+    ['create-room','ROOMS-04','rooms','Create Room','Creation','02-rooms/04-create-room-v2.png',['Room type','Country','Seat presets'],'Use safe defaults','Room creation focuses on content, country, room type, and competitive seat presets without access-mode complexity.'],
+    ['seat-layout','ROOMS-05','rooms','Seat Layout Preview','Creation','02-rooms/05-seat-layout-preview.png',['5 / 8 / 9 seats','12 / 15 / 20 seats','Preview'],'Preview before creating','Preset seat layouts prevent broken arrangements and make large-room capacity predictable.'],
+    ['party-room','ROOMS-06','rooms','Party Room · Tap Seat','Live room','02-rooms/06-party-room-20.png',['Room header','Seat grid','Room chat'],'Tap a seat to speak','An empty seat is the join action, so a separate Join Mic button is unnecessary.'],
+    ['party-seated','ROOMS-07','rooms','Party Room · On Mic','Live state','02-rooms/07-join-mic.png',['Active seat','Mute','Leave seat'],'Make the new state visible','After seating, the selected seat and bottom controls clearly confirm that the user is on mic.'],
+    ['exit-room','ROOMS-08','rooms','Exit Room','Dialog','02-rooms/08-exit-room.png',['Keep room','Exit','Confirmation'],'Protect live continuity','Room owners can keep the room running or exit intentionally without an accidental shutdown.'],
+    ['party-gift','ROOMS-09','rooms','Party Gift Panel','Commerce','02-rooms/09-party-gift-panel.png',['Recipients','Gift grid','Send CTA'],'Keep the room visible','The compact gift sheet supports fast selection while preserving live room context.'],
+    ['game-room','ROOMS-10','rooms','Game Room','Live game','02-rooms/10-game-room-v2.png',['Game board','Seat grid','Room chat'],'Balance play and conversation','The game occupies the first visual region while seats and chat remain available beneath it.'],
+    ['game-gift','ROOMS-11','rooms','Game Gift Panel','Commerce','02-rooms/11-game-gift-panel.png',['Recipients','Gift grid','Send CTA'],'Reward without leaving play','The same compact gifting model works in game rooms without replacing the game state.'],
+    ['game-rules','ROOMS-12','rooms','Game Rules','Education','02-rooms/12-game-rules.png',['Rule steps','Examples','Acknowledge'],'Explain before betting','Rules are separated from the game table so new players can learn without cluttering play.'],
+    ['game-records','ROOMS-13','rooms','Game Records','History','02-rooms/13-game-records.png',['Round list','Outcome','Amounts'],'Make outcomes auditable','Round-by-round records help users understand game results and currency changes.'],
+
+    ['invite-home','INVITE-01','invite','Invite Network','Growth','03-invite/01-invite-home-v2.png',['Invite code','Earnings overview','Level network'],'Lead with earnings clarity','The dashboard shows referral attribution, income, and three-level network health in one view.'],
+    ['invite-bind','INVITE-02','invite','Bind Invitation Code','Attribution','03-invite/02-bind-invitation-code.png',['Code input','Inviter lookup','Bind CTA'],'Bind once, explain clearly','Manual binding remains available for users who skipped the registration step.'],
+    ['invite-success','INVITE-03','invite','Binding Successful','Confirmation','03-invite/03-invitation-bound-success.png',['Success state','Relationship','Done'],'Close the loop','A dedicated success screen prevents uncertainty about whether the code was accepted.'],
+    ['invite-rules','INVITE-04','invite','Commission Rules','Education','03-invite/04-commission-rules.png',['Level 1 · 15%','Level 2 · 5%','Level 3 · 2%'],'Teach the three levels','Each commission level has one rate, one source relationship, and one short explanation.'],
+    ['invite-records','INVITE-05','invite','Commission Records','Ledger','03-invite/05-commission-records.png',['Level filter','Member source','Commission amount'],'Trace every earning','Records connect each commission to the member, level, consumption, and final amount.'],
+    ['invite-network','INVITE-06','invite','Network Members','Directory','03-invite/06-network-members.png',['Level tabs','Search','Member rows'],'Manage the network quickly','Level filters and concise rows let an agent move from overview to an individual member.'],
+    ['invite-member','INVITE-07','invite','Member Details','Profile','03-invite/07-member-details.png',['Profile','Contribution','Downline'],'Show contribution context','Member details combine direct consumption, commission contribution, and downstream scale.'],
+
+    ['me-home','ME-01','me','Me','Account','04-me/01-me-home-v2.png',['Profile','Wallet','Core services'],'Keep phase one focused','The home page contains only Wallet, My Agency, Streamer Center, and Settings.'],
+    ['edit-profile','ME-02','me','Edit Profile','Account','04-me/02-edit-profile.png',['Avatar','Profile fields','Save'],'Make identity editable','Basic account fields live in one compact edit surface.'],
+    ['wallet-records','ME-03','me','Wallet Records','Finance','04-me/03-wallet-records.png',['Balance','Filters','Transactions'],'Money needs hierarchy','Balance and transaction history stay legible without adding cash-out to phase one.'],
+    ['wallet-recharge','ME-04','me','Recharge','Finance','04-me/04-recharge.png',['Coin packages','Amount','Continue'],'Start with amount','The recharge flow first captures the intended coin amount, then routes to a dealer.'],
+    ['dealer-select','ME-05','me','Select Dealer','Finance','04-me/05-dealer-select.png',['Dealer list','Rate','Availability'],'Make the counterparty visible','Dealer identity, exchange rate, and availability reduce uncertainty before payment.'],
+    ['recharge-confirm','ME-06','me','Confirm Recharge','Finance','04-me/06-recharge-confirm.png',['Order summary','Dealer','Confirm'],'Confirm before creating','The user sees the exact coin amount and dealer before the recharge order is created.'],
+    ['recharge-orders','ME-07','me','Recharge Orders','Finance','04-me/07-recharge-orders.png',['Order status','Amount','Dealer'],'Track every order','Recharge orders expose processing status and make dealer follow-up straightforward.'],
+    ['agency-unbound','ME-08','me','Agency · Unbound','Agency','04-me/08-agency-unbound.png',['Agency ID','Benefits','Bind CTA'],'Explain why binding matters','Unbound users see the value and the single action required to join an agency.'],
+    ['agency-confirm','ME-09','me','Agency · Confirm','Agency','04-me/09-agency-confirm.png',['Agency profile','Terms','Confirm'],'Confirm the relationship','The final agency identity and membership relationship are visible before binding.'],
+    ['agency-bound','ME-10','me','My Agency','Agency','04-me/10-agency-bound.png',['Agency profile','This Month','Game earnings'],'Operate from one page','Bound members see agency status and monthly gift and game earnings without policy clutter.'],
+    ['agency-details','ME-11','me','Agency Month Details','Analytics','04-me/11-agency-month-details.png',['Gift earnings','Game earnings','Daily details'],'Explain the monthly total','Monthly detail separates gift and game income and provides a daily ledger.'],
+    ['streamer-center','ME-12','me','Streamer Center','Creator tools','04-me/12-streamer-center-v2.png',['Today','This Month','Records'],'Focus on creator income','Today and This Month both include live time, gift earnings, and game earnings.'],
+    ['streamer-details','ME-13','me','Streamer Month Details','Analytics','04-me/13-streamer-month-details.png',['Gift earnings','Game earnings','Trend'],'Show performance drivers','Monthly details make live and game contribution comparable.'],
+    ['live-records','ME-14','me','Live Records','Creator history','04-me/14-live-records.png',['Room','Duration','Date'],'Keep sessions auditable','Every live session records its room, start time, and duration.'],
+    ['gift-records','ME-15','me','Gift Records','Creator history','04-me/15-gift-records.png',['Sender','Gift','Value'],'Trace creator income','Gift records connect the sender, gift, room, and value.'],
+    ['settings','ME-16','me','Settings','Preferences','04-me/16-setting-v2.png',['Account','Preferences','Legal'],'Use familiar grouping','Security, language, audio, legal, and account actions follow a predictable settings hierarchy.'],
+    ['account-security','ME-17','me','Account & Security','Security','04-me/17-account-security.png',['Phone','Password','Devices'],'Put risk controls together','Identity and login security live in one clear section.'],
+    ['language','ME-18','me','Language','Preference','04-me/18-language.png',['Language list','Selected state','Save'],'Keep localization explicit','The selected language is immediately visible and easy to change.'],
+    ['audio','ME-19','me','Audio & Microphone','Permissions','04-me/19-audio-microphone.png',['Microphone','Speaker','Diagnostics'],'Make voice readiness visible','Audio permissions and device checks reduce failed room participation.'],
+    ['terms','ME-20','me','Terms of Service','Legal','04-me/20-terms.png',['Document','Updated date','Sections'],'Keep legal content readable','Long-form legal content uses a calm reading layout.'],
+    ['privacy','ME-21','me','Privacy Policy','Legal','04-me/21-privacy.png',['Document','Data sections','Updated date'],'Explain data handling','Privacy content is separated into scannable data categories.'],
+    ['about','ME-22','me','About','System','04-me/22-about.png',['Brand','Version','Links'],'Make build identity clear','Version and support information are available without crowding settings.'],
+    ['logout','ME-23','me','Log Out','Dialog','04-me/23-logout-dialog.png',['Cancel','Log out','Confirmation'],'Prevent accidental logout','The destructive action is confirmed without adding extra steps.'],
+    ['delete-account','ME-24','me','Delete Account','Destructive','04-me/24-delete-account.png',['Warning','Consequences','Confirm'],'State consequences first','Permanent account deletion is isolated from everyday settings and explained clearly.'],
+    ['change-phone','ME-25','me','Change Phone','Security','04-me/25-change-phone.png',['New phone','OTP','Confirm'],'Reverify the credential','Changing the login phone number requires a fresh verification step.'],
+    ['set-password','ME-26','me','Set Password','Security','04-me/26-set-password.png',['Password','Strength','Confirm'],'Support secure recovery','Password requirements are visible before submission.'],
+    ['login-devices','ME-27','me','Login Devices','Security','04-me/27-login-devices.png',['Device list','Last active','Remove'],'Expose active sessions','Users can review and remove unfamiliar device sessions.'],
+    ['identity','ME-28','me','Identity Verification','Security','04-me/28-identity-verification.png',['Document','Selfie','Submit'],'Verify sensitive roles','Identity verification supports streamer and financial risk controls.']
+  ];
+
+  const actions = {
+    'auth-welcome': [
+      ['Continue with Phone','进入手机号登录流程','auth-phone',[7,58,86,9]],
+      ['Continue with Apple','使用 Apple 继续','auth-phone',[7,70,86,8]],
+      ['Continue with Google','使用 Google 继续','auth-phone',[7,79,86,8]]
+    ],
+    'auth-phone': [['Continue','发送验证码','auth-otp',[7,61,86,9]]],
+    'auth-otp': [['Verify','验证并进入邀请码步骤','auth-invite',[7,60,86,9]]],
+    'auth-invite': [
+      ['Bind invitation code','绑定邀请关系','auth-bound',[7,63,86,9]],
+      ['Skip for now','稍后在 Invite 页面绑定','party-list',[28,76,44,7]]
+    ],
+    'auth-bound': [['Start exploring','进入 Party 房间列表','party-list',[7,75,86,10]]],
+
+    'party-list': [
+      ['Game tab','切换到游戏房列表','game-list',[22,3,23,8]],
+      ['Search','按房间名称或 ID 搜索','room-search',[82,2,16,9]],
+      ['Open first room','进入普通语音房','party-room',[2,12,96,12]],
+      ['Create room','创建 Party 房间','create-room',[82,80,16,10]],
+      ['Invite','进入裂变模块','invite-home',[35,91,30,9]],
+      ['Me','进入个人中心','me-home',[68,91,30,9]]
+    ],
+    'game-list': [
+      ['Party tab','返回 Party 房间列表','party-list',[2,3,23,8]],
+      ['Search','搜索游戏房','room-search',[82,2,16,9]],
+      ['Open game room','进入游戏房','game-room',[2,24,96,14]],
+      ['Create room','创建游戏房','create-room',[82,80,16,10]],
+      ['Invite','进入裂变模块','invite-home',[35,91,30,9]],
+      ['Me','进入个人中心','me-home',[68,91,30,9]]
+    ],
+    'room-search': [['Back','返回房间列表','party-list',[0,2,16,9]],['Open result','打开搜索结果','party-room',[3,22,94,14]]],
+    'create-room': [['Back','返回房间列表','party-list',[0,2,16,9]],['Preview layouts','查看人数与座位排布','seat-layout',[5,47,90,20]],['Create room','创建并进入房间','party-room',[7,83,86,10]]],
+    'seat-layout': [['Back','返回创建房间','create-room',[0,2,16,9]],['Use layout','使用当前人数排布','create-room',[7,83,86,10]]],
+    'party-room': [['Exit','退出或保留房间','exit-room',[88,2,12,9]],['Tap empty seat','直接坐下并上麦','party-seated',[2,19,96,43]],['Gift','打开礼物面板','party-gift',[81,88,19,12]]],
+    'party-seated': [['Exit','退出或保留房间','exit-room',[88,2,12,9]],['Leave seat','离开麦位','party-room',[62,88,20,12]],['Gift','打开礼物面板','party-gift',[81,88,19,12]]],
+    'exit-room': [['Keep','保留房间并返回','party-room',[5,7,43,19]],['Exit room','退出到房间列表','party-list',[52,7,43,19]]],
+    'party-gift': [['Close','关闭礼物面板','party-room',[0,0,100,48]],['Send gift','发送所选礼物',null,[65,88,35,12],'礼物发送成功']],
+    'game-room': [['Exit','退出游戏房','game-list',[88,2,12,9]],['Rules','查看游戏规则','game-rules',[75,2,13,9]],['Records','查看游戏记录','game-records',[2,32,17,10]],['Tap empty seat','直接坐下并上麦',null,[2,44,96,27],'已坐下并打开麦克风'],['Gift','打开礼物面板','game-gift',[81,88,19,12]]],
+    'game-gift': [['Close','关闭礼物面板','game-room',[0,0,100,48]],['Send gift','发送游戏礼物',null,[65,88,35,12],'礼物发送成功']],
+    'game-rules': [['Back','返回游戏房','game-room',[0,2,16,9]],['Got it','已了解规则','game-room',[7,84,86,10]]],
+    'game-records': [['Back','返回游戏房','game-room',[0,2,16,9]]],
+
+    'invite-home': [['Rules','查看三级佣金规则','invite-rules',[4,18,27,14]],['Records','查看佣金记录','invite-records',[69,18,27,14]],['Invitation code','填写别人的邀请码','invite-bind',[5,35,90,12]],['View details','查看收益详情','invite-records',[5,54,90,14]],['View all','查看全部三级成员','invite-network',[65,76,31,9]],['Rooms','返回房间','party-list',[0,91,35,9]],['Me','进入个人中心','me-home',[67,91,33,9]]],
+    'invite-bind': [['Back','返回 Invite','invite-home',[0,2,16,9]],['Bind','绑定邀请码','invite-success',[7,75,86,11]]],
+    'invite-success': [['Done','返回 Invite','invite-home',[7,77,86,11]]],
+    'invite-rules': [['Back','返回 Invite','invite-home',[0,2,16,9]],['Records','查看佣金明细','invite-records',[7,84,86,10]]],
+    'invite-records': [['Back','返回 Invite','invite-home',[0,2,16,9]],['Filter levels','切换 L1 / L2 / L3',null,[5,26,90,8],'佣金层级已更新']],
+    'invite-network': [['Back','返回 Invite','invite-home',[0,2,16,9]],['Member details','查看成员贡献','invite-member',[3,26,94,12]]],
+    'invite-member': [['Back','返回成员列表','invite-network',[0,2,16,9]]],
+
+    'me-home': [['Edit profile','编辑个人资料','edit-profile',[3,7,94,20]],['Wallet records','查看钱包记录','wallet-records',[3,31,48,17]],['Recharge','进入币商充值','wallet-recharge',[51,31,46,17]],['My Agency','绑定或查看公会','agency-unbound',[4,51,92,10]],['Streamer Center','进入主播中心','streamer-center',[4,61,92,10]],['Settings','进入设置','settings',[4,72,92,10]],['Rooms','返回房间','party-list',[0,91,35,9]],['Invite','进入裂变模块','invite-home',[35,91,32,9]]],
+    'edit-profile': [['Back','返回我的首页','me-home',[0,2,16,9]],['Save','保存资料',null,[7,83,86,10],'个人资料已保存']],
+    'wallet-records': [['Back','返回我的首页','me-home',[0,2,16,9]],['Recharge','进入充值','wallet-recharge',[61,2,37,9]],['Filter','切换记录类型',null,[5,26,90,8],'记录筛选已更新']],
+    'wallet-recharge': [['Back','返回我的首页','me-home',[0,2,16,9]],['Orders','查看充值订单','recharge-orders',[68,2,30,9]],['Continue','选择币商','dealer-select',[7,82,86,11]]],
+    'dealer-select': [['Back','返回充值','wallet-recharge',[0,2,16,9]],['Select dealer','选择币商并确认','recharge-confirm',[4,19,92,15]]],
+    'recharge-confirm': [['Back','返回币商列表','dealer-select',[0,2,16,9]],['Confirm','创建充值订单','recharge-orders',[7,81,86,11]]],
+    'recharge-orders': [['Back','返回充值','wallet-recharge',[0,2,16,9]]],
+    'agency-unbound': [['Back','返回我的首页','me-home',[0,2,16,9]],['Bind agency','输入公会信息','agency-confirm',[7,77,86,11]]],
+    'agency-confirm': [['Back','返回公会绑定','agency-unbound',[0,2,16,9]],['Confirm binding','确认绑定公会','agency-bound',[7,78,86,11]]],
+    'agency-bound': [['Back','返回我的首页','me-home',[0,2,16,9]],['View details','查看本月礼物和游戏收益','agency-details',[58,28,38,10]]],
+    'agency-details': [['Back','返回我的公会','agency-bound',[0,2,16,9]]],
+    'streamer-center': [['Back','返回我的首页','me-home',[0,2,16,9]],['Month details','查看本月详情','streamer-details',[58,27,38,10]],['Live records','查看开播记录','live-records',[3,50,94,11]],['Gift records','查看礼物记录','gift-records',[3,61,94,11]]],
+    'streamer-details': [['Back','返回主播中心','streamer-center',[0,2,16,9]]],
+    'live-records': [['Back','返回主播中心','streamer-center',[0,2,16,9]]],
+    'gift-records': [['Back','返回主播中心','streamer-center',[0,2,16,9]]],
+    'settings': [['Back','返回我的首页','me-home',[0,2,16,9]],['Account & Security','进入账户安全','account-security',[3,18,94,10]],['Language','设置语言','language',[3,28,94,10]],['Audio & Microphone','设置音频','audio',[3,38,94,10]],['Terms','查看服务条款','terms',[3,49,94,9]],['Privacy','查看隐私政策','privacy',[3,58,94,9]],['About','查看版本信息','about',[3,67,94,9]],['Log out','退出登录','logout',[3,78,94,9]]],
+    'account-security': [['Back','返回设置','settings',[0,2,16,9]],['Change phone','修改手机号','change-phone',[3,18,94,10]],['Set password','设置密码','set-password',[3,28,94,10]],['Login devices','查看登录设备','login-devices',[3,38,94,10]],['Identity verification','进行身份认证','identity',[3,48,94,10]],['Delete account','删除账户','delete-account',[3,72,94,10]]],
+    'language': [['Back','返回设置','settings',[0,2,16,9]]],
+    'audio': [['Back','返回设置','settings',[0,2,16,9]]],
+    'terms': [['Back','返回设置','settings',[0,2,16,9]]],
+    'privacy': [['Back','返回设置','settings',[0,2,16,9]]],
+    'about': [['Back','返回设置','settings',[0,2,16,9]]],
+    'logout': [['Cancel','取消退出','settings',[7,68,40,10]],['Log out','确认退出','auth-welcome',[53,68,40,10]]],
+    'delete-account': [['Back','返回账户安全','account-security',[0,2,16,9]],['Delete permanently','永久删除账户',null,[7,78,86,11],'删除账户需要再次验证']],
+    'change-phone': [['Back','返回账户安全','account-security',[0,2,16,9]],['Continue','验证新手机号',null,[7,78,86,11],'验证码已发送']],
+    'set-password': [['Back','返回账户安全','account-security',[0,2,16,9]],['Save password','保存新密码',null,[7,78,86,11],'密码已更新']],
+    'login-devices': [['Back','返回账户安全','account-security',[0,2,16,9]],['Remove device','移除登录设备',null,[70,24,25,8],'设备已移除']],
+    'identity': [['Back','返回账户安全','account-security',[0,2,16,9]],['Submit','提交身份认证',null,[7,80,86,10],'身份认证已提交']]
+  };
+
+  window.VOICE_ROOM_SCREENS = base.map((item) => {
+    const [id, code, flow, title, pattern, file, tags, note, body] = item;
+    return {
+      id,
+      code,
+      flow,
+      module: flow,
+      title,
+      label: title,
+      pattern,
+      file,
+      tags,
+      note,
+      body,
+      actions: (actions[id] || []).map(([label, desc, target, box, feedback]) => ({label, desc, target, box, feedback}))
+    };
+  });
+})();

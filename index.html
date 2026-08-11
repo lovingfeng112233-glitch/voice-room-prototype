@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voice Room · Product Design System</title>
+  <style>
+    :root {
+      --ink: #14243d;
+      --muted: #75839a;
+      --line: #e3e9f1;
+      --panel: #ffffff;
+      --canvas: #f4f7fb;
+      --brand: #08a4b2;
+      --brand-strong: #07818e;
+      --brand-soft: #dff8f8;
+      --purple: #7456e9;
+      --purple-soft: #eee9ff;
+      --blue: #3d78ef;
+      --danger: #f06478;
+      --shadow: 0 16px 40px rgba(29, 53, 84, .08);
+      --shadow-soft: 0 8px 24px rgba(29, 53, 84, .06);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+    button { font: inherit; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 238px;
+      min-height: 100vh;
+      padding: 28px 18px 22px;
+      color: #d8e6f5;
+      background: #13243d;
+      display: flex;
+      flex-direction: column;
+    }
+    .brand { display: flex; gap: 12px; align-items: center; padding: 0 12px 31px; }
+    .brand-mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(145deg, #0ec6ce, #5bd8bd); color: #0e2944; display:grid; place-items:center; font-size: 12px; font-weight: 800; }
+    .brand-name { font-weight: 760; letter-spacing: .3px; color: #fff; }
+    .brand-sub { font-size: 10px; color: #8fa5c2; margin-top: 3px; }
+    .nav-label { padding: 0 12px 9px; color: #748cab; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; }
+    .nav { display: grid; gap: 5px; }
+    .nav-item { border: 0; background: transparent; color: #afc0d6; border-radius: 10px; text-align: left; display:flex; gap: 12px; align-items:center; padding: 11px 12px; cursor: pointer; font-size: 13px; transition: .2s ease; }
+    .nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .nav-item.active { color: #fff; background: linear-gradient(90deg, rgba(13,194,197,.24), rgba(13,194,197,.08)); box-shadow: inset 3px 0 var(--brand); }
+    .nav-icon { width: 21px; text-align: center; font-size: 15px; color: #7f99b8; }
+    .nav-item.active .nav-icon { color: #43d7d2; }
+    .side-spacer { flex: 1; }
+    .workspace-card { margin: 0 4px; padding: 13px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.06); border-radius: 12px; }
+    .workspace-card small { display:block; color:#91a9c5; font-size:10px; margin-bottom: 7px; }
+    .workspace-card strong { display:block; color:#fff; font-size: 12px; }
+    .workspace-card span { color:#7dd3d0; font-size: 10px; }
+    .main { flex: 1; min-width: 0; padding: 24px 32px 28px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom: 24px; }
+    .eyebrow { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+    h1 { margin:0; font-size: 25px; line-height: 1.2; letter-spacing: -.02em; }
+    .top-actions { display:flex; gap: 10px; align-items:center; }
+    .icon-btn, .outline-btn { border: 1px solid var(--line); color: var(--muted); background: var(--panel); border-radius: 9px; cursor:pointer; transition:.2s; }
+    .icon-btn { width: 35px; height: 35px; display:grid; place-items:center; font-size: 16px; }
+    .icon-btn:hover, .outline-btn:hover { border-color: #b8c7d9; color: var(--ink); box-shadow: var(--shadow-soft); }
+    .outline-btn { padding: 9px 13px; font-size: 12px; display:flex; gap: 7px; align-items:center; }
+    .primary-btn { border:0; color:#fff; background:var(--brand); border-radius:9px; padding: 10px 15px; font-size:12px; cursor:pointer; box-shadow: 0 7px 15px rgba(8,164,178,.19); transition:.2s; }
+    .primary-btn:hover { background:var(--brand-strong); transform:translateY(-1px); }
+    .header-rule { height: 1px; background: var(--line); margin-bottom: 23px; }
+    .content-grid { display:grid; grid-template-columns: minmax(180px, 230px) minmax(360px, 1fr) minmax(245px, 285px); gap: 24px; align-items:start; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-soft); }
+    .panel-head { display:flex; align-items:center; justify-content:space-between; padding: 17px 18px 12px; }
+    .panel-head h2 { margin:0; font-size: 12px; font-weight: 700; }
+    .panel-head span { font-size:10px; color:var(--muted); }
+    .screen-list { padding: 3px 10px 12px; }
+    .module-label { display:flex; align-items:center; gap: 8px; padding: 14px 8px 8px; font-size:11px; font-weight: 750; color:var(--ink); }
+    .module-dot { width: 7px; height: 7px; border-radius:50%; background:var(--brand); }
+    .module-dot.invite { background:var(--purple); }
+    .module-dot.me { background:var(--blue); }
+    .screen-btn { width:100%; display:flex; align-items:center; gap: 10px; border:0; background:transparent; text-align:left; padding: 8px; border-radius: 10px; color: #6f7d91; cursor:pointer; font-size: 11px; }
+    .screen-btn:hover { background: #f4f8fb; color: var(--ink); }
+    .screen-btn.active { background: #e6f8f9; color: var(--brand-strong); font-weight: 700; }
+    .screen-num { width: 22px; height: 22px; border-radius: 6px; display:grid; place-items:center; background: #f1f4f8; color: #96a2b4; font-size: 9px; font-weight: 700; flex: none; }
+    .screen-btn.active .screen-num { background:var(--brand); color:#fff; }
+    .preview-area { min-width:0; }
+    .preview-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom: 15px; }
+    .crumb { display:flex; align-items:center; gap: 7px; color:var(--muted); font-size:11px; }
+    .crumb strong { color: var(--ink); }
+    .toolbar-controls { display:flex; gap: 7px; }
+    .stage { min-height: 744px; padding: 27px 24px; border-radius:18px; border: 1px solid var(--line); background: radial-gradient(circle at 50% 18%, #fff 0, #f7f9fc 49%, #edf2f7 100%); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+    .stage::before { content:""; position:absolute; width: 520px; height: 520px; border:1px solid rgba(8,164,178,.08); border-radius:50%; top:-135px; left:50%; transform:translateX(-50%); }
+    .stage-note { position:absolute; top:14px; left:18px; z-index:2; color:#94a2b4; font-size:10px; }
+    .phone-wrap { position:relative; z-index:1; }
+    .phone { width: 312px; aspect-ratio: 0.462; background:#111827; padding: 9px; border-radius: 35px; box-shadow: 0 24px 60px rgba(23,42,66,.26), 0 0 0 1px rgba(15,30,47,.65); position:relative; }
+    .phone::before { content:""; position:absolute; top:10px; left:50%; width: 97px; height: 21px; border-radius: 14px; background:#101827; transform:translateX(-50%); z-index:3; }
+    .phone-screen { width:100%; height:100%; border-radius: 27px; display:block; background:#fff; object-fit:cover; object-position: center top; }
+    .hotspot { position:absolute; z-index:4; border: 1px dashed rgba(8,164,178,.8); background: rgba(8,164,178,.08); color: #126f77; border-radius: 8px; font-size: 10px; padding: 5px 8px; opacity:0; transform:translateY(4px); transition:.2s; pointer-events:none; }
+    .phone-wrap:hover .hotspot { opacity:1; transform:translateY(0); }
+    .hotspot.h1 { right:-98px; top: 105px; }
+    .hotspot.h2 { left:-110px; bottom: 116px; }
+    .screen-caption { text-align:center; margin-top: 15px; color: var(--muted); font-size: 10px; }
+    .screen-caption strong { display:block; color:var(--ink); font-size:12px; margin-bottom:4px; }
+    .inspect { padding-bottom: 9px; }
+    .inspect-section { padding: 13px 18px; border-top:1px solid var(--line); }
+    .inspect-section:first-of-type { border-top:0; }
+    .inspect-section h3 { margin:0 0 11px; font-size:10px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
+    .meta-row { display:flex; align-items:center; justify-content:space-between; padding: 7px 0; font-size:11px; }
+    .meta-row span:first-child { color:var(--muted); }
+    .meta-row span:last-child { color:var(--ink); font-weight:600; }
+    .tag-row { display:flex; flex-wrap:wrap; gap:6px; }
+    .tag { padding:5px 8px; border-radius: 6px; color:#4b5e77; background:#f2f5f9; font-size:10px; }
+    .tag.active { background:var(--brand-soft); color:var(--brand-strong); }
+    .swatches { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+    .swatch { text-align:center; font-size:9px; color:var(--muted); }
+    .swatch i { display:block; width:100%; height:25px; border-radius:6px; margin-bottom:5px; }
+    .token-card { padding: 12px; background:#f7fafc; border:1px solid #e8edf3; border-radius:10px; font-size:10px; color:var(--muted); line-height:1.5; }
+    .token-card strong { color:var(--ink); display:block; font-size:11px; margin-bottom:3px; }
+    .annotation { display:flex; align-items:flex-start; gap:8px; color:var(--muted); font-size:10px; line-height:1.5; }
+    .annotation b { width:16px; height:16px; flex:none; border-radius:50%; display:grid; place-items:center; background:#e4f8f8; color:var(--brand-strong); font-size:9px; }
+    .bottom-note { margin-top:20px; display:flex; align-items:center; gap:8px; color:#9aa7b9; font-size:10px; }
+    .status-dot { width:7px; height:7px; border-radius:50%; background:#4ccfa7; }
+    .toast { position:fixed; right:25px; bottom:25px; background:#13243d; color:#fff; font-size:12px; padding:11px 14px; border-radius:9px; box-shadow:var(--shadow); opacity:0; transform:translateY(12px); pointer-events:none; transition:.22s; }
+    .toast.show { opacity:1; transform:none; }
+    .empty { min-height: 300px; display:grid; place-items:center; color:var(--muted); font-size:12px; }
+    @media (max-width: 1120px) {
+      .main { padding: 22px; }
+      .content-grid { grid-template-columns: 205px minmax(350px, 1fr); }
+      .inspect { grid-column: 1 / -1; display:grid; grid-template-columns: repeat(3, 1fr); }
+      .inspect .panel-head { grid-column: 1 / -1; }
+      .inspect-section { border-top:0; border-right:1px solid var(--line); }
+      .inspect-section:last-child { border-right:0; }
+    }
+    @media (max-width: 780px) {
+      .sidebar { width: 68px; padding: 20px 9px; }
+      .brand { padding:0 10px 24px; }
+      .brand-copy, .nav-label, .nav-item span:not(.nav-icon), .workspace-card { display:none; }
+      .nav-item { justify-content:center; padding:12px 8px; }
+      .main { padding: 18px 14px 28px; }
+      .topbar { align-items:flex-start; gap:10px; }
+      h1 { font-size:21px; }
+      .top-actions .outline-btn { display:none; }
+      .content-grid { grid-template-columns:1fr; gap:14px; }
+      .screen-list { display:flex; gap:8px; overflow:auto; padding: 4px 12px 14px; }
+      .module-label { display:none; }
+      .screen-btn { width:auto; min-width:130px; background:#f6f8fb; }
+      .screen-btn.active { background:var(--brand-soft); }
+      .stage { min-height: 680px; padding:22px 10px; }
+      .phone { width: 270px; }
+      .inspect { display:block; }
+      .inspect-section { border-top:1px solid var(--line); border-right:0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">VR</div>
+        <div class="brand-copy"><div class="brand-name">VOICE ROOM</div><div class="brand-sub">Product design system · v1.0</div></div>
+      </div>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav" aria-label="Workspace navigation">
+        <button class="nav-item active" data-nav="auth"><span class="nav-icon">A</span><span>Registration &amp; login</span></button>
+        <button class="nav-item" data-nav="rooms"><span class="nav-icon">◈</span><span>Rooms</span></button>
+        <button class="nav-item" data-nav="invite"><span class="nav-icon">⌁</span><span>Invite network</span></button>
+        <button class="nav-item" data-nav="me"><span class="nav-icon">●</span><span>Me</span></button>
+      </nav>
+      <div class="nav-label" style="margin-top:25px">Library</div>
+      <nav class="nav">
+        <button class="nav-item" data-action="tokens"><span class="nav-icon">⊞</span><span>Design tokens</span></button>
+        <button class="nav-item" data-action="notes"><span class="nav-icon">□</span><span>Handoff notes</span></button>
+      </nav>
+      <div class="side-spacer"></div>
+      <div class="workspace-card"><small>Current workspace</small><strong>Voice Room App</strong><span>53 screens · Phase 1</span></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><div class="eyebrow">PRODUCT DESIGN / MOBILE APP</div><h1>Voice Room design handoff</h1></div>
+        <div class="top-actions"><button class="outline-btn" data-action="share"><span>↗</span> Share preview</button><button class="icon-btn" data-action="theme" title="Toggle contrast theme">◐</button><button class="primary-btn" data-action="prototype">Open interactive prototype</button></div>
+      </header>
+      <div class="header-rule"></div>
+
+      <div class="content-grid">
+        <section class="panel screens-panel">
+          <div class="panel-head"><h2>Screen navigator</h2><span id="screenCount">53 screens</span></div>
+          <div class="screen-list" id="screenList"></div>
+        </section>
+
+        <section class="preview-area">
+          <div class="preview-toolbar"><div class="crumb"><span>Voice Room App</span><span>/</span><strong id="crumbTitle">Rooms</strong></div><div class="toolbar-controls"><button class="icon-btn" data-action="zoom-out" title="Zoom out">−</button><button class="icon-btn" data-action="zoom-in" title="Zoom in">＋</button><button class="icon-btn" data-action="fullscreen" title="Focus preview">↗</button></div></div>
+          <div class="stage" id="stage">
+            <div class="stage-note">LIVE PREVIEW · 390 × 844</div>
+            <div class="phone-wrap" id="phoneWrap">
+              <div class="phone"><img id="screenImage" class="phone-screen" alt="Selected Voice Room screen" /></div>
+              <div class="hotspot h1">tap to explore</div><div class="hotspot h2">bottom navigation</div>
+              <div class="screen-caption"><strong id="captionTitle">Party 房间列表</strong><span id="captionMeta">Rooms · 01 / 07 · Ready for review</span></div>
+            </div>
+          </div>
+          <div class="bottom-note"><span class="status-dot"></span> Prototype assets synced from source board <span>·</span> Last updated Aug 10, 2026</div>
+        </section>
+
+        <aside class="panel inspect">
+          <div class="panel-head"><h2>Screen details</h2><span id="screenId">ROOMS-01</span></div>
+          <div class="inspect-section"><h3>Overview</h3><div class="meta-row"><span>Module</span><span id="metaModule">Rooms</span></div><div class="meta-row"><span>Pattern</span><span id="metaPattern">Discovery</span></div><div class="meta-row"><span>Viewport</span><span>390 × 844</span></div></div>
+          <div class="inspect-section"><h3>Components</h3><div class="tag-row" id="componentTags"></div></div>
+          <div class="inspect-section"><h3>Color tokens</h3><div class="swatches"><div class="swatch"><i style="background:#08a4b2"></i>Brand</div><div class="swatch"><i style="background:#13243d"></i>Ink</div><div class="swatch"><i style="background:#f4f7fb"></i>Canvas</div><div class="swatch"><i style="background:#7456e9"></i>Accent</div></div></div>
+          <div class="inspect-section"><h3>Handoff note</h3><div class="token-card"><strong id="noteTitle">Build trust fast</strong><span id="noteBody">The room list prioritizes live status, room theme, and a clear entry point. Keep the primary action within thumb reach.</span></div></div>
+          <div class="inspect-section"><div class="annotation"><b>i</b><span>Use the navigator to compare related states. Preview is scaled to fit; source assets remain pixel-accurate.</span></div></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="prototype-data.js"></script>
+  <script>
+    const root = 'voice-room-v2-prototypes';
+    const legacyScreens = [
+      {module:'rooms', label:'Party 房间列表', id:'ROOMS-01', file:'01-rooms/01-party-list.png', pattern:'Discovery', tags:['Tabs','Room list','Bottom nav'], note:'Build trust fast', body:'The room list prioritizes live status, room theme, and a clear entry point. Keep the primary action within thumb reach.'},
+      {module:'rooms', label:'Game 房间列表', id:'ROOMS-02', file:'01-rooms/02-game-list.png', pattern:'Discovery', tags:['Banner','Game cards','Filter'], note:'Make play visible', body:'Game cards use vivid artwork as the entry signal. Keep the game category switcher persistent while browsing.'},
+      {module:'rooms', label:'创建房间', id:'ROOMS-03', file:'01-rooms/03-create-room.png', pattern:'Creation', tags:['Form','Segmented control','CTA'], note:'One decision per step', body:'The create flow keeps room mode and access visible at the same time. Use the full-width CTA for confidence.'},
+      {module:'rooms', label:'普通语音房', id:'ROOMS-04', file:'01-rooms/04-party-room.png', pattern:'Live room', tags:['Room header','Seat grid','Chat'], note:'Conversation is the canvas', body:'The room state gives the seat grid the most space. Keep room controls low-contrast until the user needs them.'},
+      {module:'rooms', label:'游戏房', id:'ROOMS-05', file:'01-rooms/05-game-room.png', pattern:'Live room', tags:['Game table','Scoreboard','Chat'], note:'Game first, chat second', body:'The game board is the focal point. Use the scoreboard to create a clear rhythm between play and conversation.'},
+      {module:'rooms', label:'普通语音礼物面板', id:'ROOMS-06', file:'01-rooms/06-party-gift-panel.png', pattern:'Commerce', tags:['Bottom sheet','Gift grid','Balance'], note:'Reward the moment', body:'The gift sheet is deliberately compact so the live room remains visible behind the action.'},
+      {module:'rooms', label:'游戏房礼物面板', id:'ROOMS-07', file:'01-rooms/07-game-gift-panel.png', pattern:'Commerce', tags:['Bottom sheet','Gift grid','Send CTA'], note:'Keep the action obvious', body:'Separate gift selection from sending. The bright primary action should remain fixed at the bottom of the sheet.'},
+      {module:'invite', label:'Invite 裂变首页', id:'INVITE-01', file:'02-invite/01-invite-home.png', pattern:'Growth', tags:['Hero banner','Stats','Member list'], note:'Lead with momentum', body:'The invite dashboard turns network growth into a visible, repeatable loop with progress and recent member context.'},
+      {module:'invite', label:'三级佣金规则', id:'INVITE-02', file:'02-invite/02-commission-rules.png', pattern:'Education', tags:['Rule card','Step list','CTA'], note:'Explain the upside', body:'Commission rules are easiest to scan when each level owns one color and one sentence.'},
+      {module:'invite', label:'佣金记录', id:'INVITE-03', file:'02-invite/03-commission-records.png', pattern:'Ledger', tags:['Balance','Filters','Timeline'], note:'Make earnings legible', body:'Separate the headline total from the activity ledger. Positive and negative amounts use a consistent semantic color system.'},
+      {module:'invite', label:'三级成员列表', id:'INVITE-04', file:'02-invite/04-network-members.png', pattern:'Directory', tags:['Search','Tabs','Member rows'], note:'Scan at a glance', body:'Member rows carry only the attributes needed for a quick decision, with deeper details one tap away.'},
+      {module:'invite', label:'成员详情', id:'INVITE-05', file:'02-invite/05-member-details.png', pattern:'Profile', tags:['Profile','KPI card','Activity'], note:'Context before action', body:'The member profile combines contribution overview and recent contribution to keep follow-up grounded.'},
+      {module:'me', label:'我的首页', id:'ME-01', file:'03-me/01-me-home.png', pattern:'Account', tags:['Profile card','Wallet','Settings list'], note:'A calm home base', body:'The Me home uses a soft visual layer to make account management feel approachable without adding noise.'},
+      {module:'me', label:'编辑个人资料', id:'ME-02', file:'03-me/02-edit-profile.png', pattern:'Account', tags:['Avatar','Form','Save CTA'], note:'Edit with confidence', body:'Editable fields are grouped into a single surface with a persistent save action.'},
+      {module:'me', label:'钱包记录', id:'ME-03', file:'03-me/03-wallet-records.png', pattern:'Finance', tags:['Balance','Tabs','Transaction list'], note:'Money needs hierarchy', body:'The wallet screen gives balance the strongest typographic emphasis and keeps transaction categories easy to filter.'},
+      {module:'me', label:'币商充值', id:'ME-04', file:'03-me/04-recharge.png', pattern:'Finance', tags:['Amount grid','Payment method','Security'], note:'Remove uncertainty', body:'Recharge keeps denomination, method, and the final action in one focused flow with clear trust cues.'},
+      {module:'me', label:'我的公会', id:'ME-05', file:'03-me/05-my-agency.png', pattern:'Creator tools', tags:['Agency card','Membership','Rules'], note:'Show the next step', body:'Agency status and monthly metrics are paired with the tools a streamer uses most often.'},
+      {module:'me', label:'Streamer Center', id:'ME-06', file:'03-me/06-streamer-center.png', pattern:'Creator tools', tags:['Live metrics','Room tools','Progress'], note:'Tools for the flow', body:'The streamer center puts live time, room management, and gift earnings in a compact operational view.'},
+      {module:'me', label:'Feedback', id:'ME-07', file:'03-me/07-feedback.png', pattern:'Support', tags:['Category','Text area','Upload'], note:'Keep support human', body:'A short form with optional screenshots lowers the effort to report an issue accurately.'},
+      {module:'me', label:'Setting', id:'ME-08', file:'03-me/08-setting.png', pattern:'Preferences', tags:['Account','Preferences','Legal'], note:'Quietly complete', body:'Settings follow a familiar grouped-list pattern, with destructive actions isolated at the bottom.'}
+    ];
+
+    const screens = window.VOICE_ROOM_SCREENS;
+    const screenList = document.querySelector('#screenList');
+    const image = document.querySelector('#screenImage');
+    const moduleTitle = {auth:'Registration & Login', rooms:'Rooms', invite:'Invite network', me:'Me'};
+    let selected = 0;
+    let zoom = 1;
+
+    function renderList() {
+      screenList.innerHTML = '';
+      ['auth','rooms','invite','me'].forEach(module => {
+        const group = document.createElement('div'); group.className='module-group';
+        const label = document.createElement('div'); label.className='module-label';
+        label.innerHTML = `<i class="module-dot ${module}"></i>${moduleTitle[module]}<span style="margin-left:auto;color:#a5b1c0;font-size:9px">${screens.filter(s=>s.module===module).length}</span>`;
+        group.appendChild(label);
+        screens.forEach((s,i) => { if (s.module !== module) return; const b=document.createElement('button'); b.className='screen-btn'+(i===selected?' active':''); b.innerHTML=`<span class="screen-num">${String(i+1).padStart(2,'0')}</span><span>${s.label}</span>`; b.onclick=()=>selectScreen(i); group.appendChild(b); });
+        screenList.appendChild(group);
+      });
+    }
+    function selectScreen(index) {
+      selected = index; const s=screens[index];
+      image.src = `${root}/${s.file}`; image.alt = s.label;
+      document.querySelector('#crumbTitle').textContent = moduleTitle[s.module];
+      document.querySelector('#captionTitle').textContent = s.label;
+      document.querySelector('#captionMeta').textContent = `${moduleTitle[s.module]} · ${String(index+1).padStart(2,'0')} / ${screens.filter(x=>x.module===s.module).length} · Ready for review`;
+      document.querySelector('#screenId').textContent=s.code; document.querySelector('#metaModule').textContent=moduleTitle[s.module]; document.querySelector('#metaPattern').textContent=s.pattern;
+      document.querySelector('#componentTags').innerHTML=s.tags.map((tag,i)=>`<span class="tag ${i===0?'active':''}">${tag}</span>`).join('');
+      document.querySelector('#noteTitle').textContent=s.note; document.querySelector('#noteBody').textContent=s.body;
+      document.querySelectorAll('.screen-btn').forEach((b)=>b.classList.remove('active'));
+      const active = [...document.querySelectorAll('.screen-btn')].find(b=>b.querySelector('.screen-num')?.textContent===String(index+1).padStart(2,'0')); if(active) active.classList.add('active');
+    }
+    function toast(message) { const el=document.querySelector('#toast'); el.textContent=message; el.classList.add('show'); clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.classList.remove('show'),2200); }
+    document.querySelectorAll('[data-nav]').forEach(btn=>btn.onclick=()=>{ const module=btn.dataset.nav; const index=screens.findIndex(s=>s.module===module); selectScreen(index); document.querySelectorAll('.nav-item[data-nav]').forEach(n=>n.classList.toggle('active', n===btn)); });
+    document.querySelectorAll('[data-action]').forEach(btn=>btn.onclick=()=>{ const action=btn.dataset.action; if(action==='zoom-in'){zoom=Math.min(1.15,zoom+.05); document.querySelector('.phone-wrap').style.transform=`scale(${zoom})`; toast(`Preview zoom ${Math.round(zoom*100)}%`);} else if(action==='zoom-out'){zoom=Math.max(.85,zoom-.05); document.querySelector('.phone-wrap').style.transform=`scale(${zoom})`; toast(`Preview zoom ${Math.round(zoom*100)}%`);} else if(action==='share'){navigator.clipboard?.writeText(location.href); toast('Preview link copied');} else if(action==='prototype'){location.href='interactive-prototype.html';} else if(action==='fullscreen'){document.querySelector('#stage').scrollIntoView({behavior:'smooth',block:'center'}); toast('Preview focused');} else if(action==='theme'){document.body.classList.toggle('contrast'); toast('Contrast preview toggled');} else if(action==='tokens'){toast('Token library is shown in the inspector');} else if(action==='notes'){toast('Handoff notes are shown per screen');} });
+    document.querySelector('#screenCount').textContent = `${screens.length} screens`;
+    renderList(); selectScreen(0);
+  </script>
+</body>
+</html>
